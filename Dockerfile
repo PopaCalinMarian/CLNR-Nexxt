@@ -20,7 +20,7 @@ RUN mkdir -p /universe /output /tmp && \
 COPY src/ /app/src/
 COPY data/practice.csv /app/data/practice.csv
 COPY data/lexicon.json /app/data/lexicon.json
-COPY data/claims_1000.csv /app/data/claims_1000.csv
+COPY generate_claims.py /app/generate_claims.py
 COPY entrypoint.py /app/entrypoint.py
 
 # Ensure all files are readable by non-root user 10001
