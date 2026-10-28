@@ -102,16 +102,17 @@ def main():
     output_rows = []
 
     # Section A: First 1,897 rows (Practice rows with labels)
+    # Note: As per contracts/README.md, input rows have empty 'type', 'text', 'form'.
+    # We do NOT hardcode confidence; it is left empty until calibrated with model/eval.
     for r in practice_rows:
-        label = (r.get("label") or "true").strip().lower()
-        conf = "0.95" if label in ("true", "false") else ""
+        label = (r.get("label") or "").strip().lower()
         output_rows.append({
             "id": r["id"].strip(),
             "type": "",
             "text": "",
             "form": "",
             "label": label,
-            "confidence": conf
+            "confidence": ""  # No hardcoded confidence; left empty as requested
         })
 
     # Section B: The remaining rows up to 20,000 universe rows
