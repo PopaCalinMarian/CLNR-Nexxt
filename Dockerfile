@@ -7,6 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
     HOME=/tmp \
     XDG_CACHE_HOME=/tmp \
     TMPDIR=/tmp \
+    LOKY_MAX_CPU_COUNT=2 \
     ARENA_UNIVERSE=/universe \
     ARENA_OUTPUT=/output
 
@@ -16,11 +17,15 @@ RUN mkdir -p /universe /output /tmp && \
     chmod 1777 /tmp && \
     chmod 777 /output
 
-# Copy standard library source code and data dependencies
+# Install ML dependencies required by label_rows
+RUN pip install --no-cache-dir numpy pandas scipy scikit-learn
+
+# Copy standard library source code, ML labeler, and data dependencies
 COPY src/ /app/src/
 COPY data/practice.csv /app/data/practice.csv
 COPY data/lexicon.json /app/data/lexicon.json
 COPY generate_claims.py /app/generate_claims.py
+COPY label_rows.py /app/label_rows.py
 COPY entrypoint.py /app/entrypoint.py
 
 # Ensure all files are readable by non-root user 10001

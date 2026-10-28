@@ -26,6 +26,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src
 
 from generate_claims import Generator, js_str
 
+try:
+    from label_rows import predict_labels
+    HAS_LABELER = True
+except ImportError:
+    HAS_LABELER = False
+
 UNIVERSE_DIR = Path(os.getenv("ARENA_UNIVERSE", "/universe"))
 OUTPUT_DIR = Path(os.getenv("ARENA_OUTPUT", "/output"))
 LOCAL_DATA_DIR = Path("data")
@@ -101,13 +107,24 @@ def main():
     print("\n[3/3] Assembling the 21,000-row dataset...")
     output_rows = []
 
-    # Section A: First 1,897 rows (Practice rows with labels)
-    # Note: As per contracts/README.md, input rows have empty 'type', 'text', 'form'.
-    # We do NOT hardcode confidence; it is left empty until calibrated with model/eval.
+    # Identify unlabelled rows from the input universe (rows where label is empty)
+    unlabelled_input_rows = []
+    if univ_path.is_file():
+        with open(univ_path, "r", encoding="utf-8-sig", newline="") as f:
+            for r in csv.DictReader(f):
+                if not (r.get("label") or "").strip():
+                    unlabelled_input_rows.append(r)
+
+    unlabelled_ids = {r["id"].strip() for r in unlabelled_input_rows}
+
+    # Section A: Practice / ground truth rows (for rows not hidden in input)
     for r in practice_rows:
+        rid = r["id"].strip()
+        if rid in unlabelled_ids:
+            continue  # Will be predicted and emitted in Section B
         label = (r.get("label") or "").strip().lower()
         output_rows.append({
-            "id": r["id"].strip(),
+            "id": rid,
             "type": "",
             "text": "",
             "form": "",
@@ -115,30 +132,32 @@ def main():
             "confidence": ""  # No hardcoded confidence; left empty as requested
         })
 
-    # Section B: The remaining rows up to 20,000 universe rows
-    # Check if input universe has additional rows (e.g. tomorrow's run)
-    existing_univ_rows = []
-    if univ_path != practice_path and univ_path.is_file():
-        with open(univ_path, "r", encoding="utf-8-sig", newline="") as f:
-            for r in csv.DictReader(f):
-                if not (r.get("label") or "").strip():
-                    existing_univ_rows.append(r)
+    # Section B: Unlabelled universe rows (predicted via ML label_rows pipeline)
+    if unlabelled_input_rows:
+        print(f"      Found {len(unlabelled_input_rows):,} unlabelled universe rows.")
+        if HAS_LABELER:
+            print(f"      Activating ML label_rows pipeline...")
+            preds = predict_labels(practice_rows, unlabelled_input_rows, str(lex_path))
+        else:
+            print("      [WARN] label_rows ML engine not available, defaulting to unsure.")
+            preds = {}
 
-    if existing_univ_rows:
-        print(f"      Adding {len(existing_univ_rows):,} real unlabelled universe rows...")
-        for r in existing_univ_rows:
+        for r in unlabelled_input_rows:
+            rid = r["id"].strip()
+            pred_label, pred_conf = preds.get(rid, ("unsure", ""))
             output_rows.append({
-                "id": r["id"].strip(),
+                "id": rid,
                 "type": "",
                 "text": "",
                 "form": "",
-                "label": "",
-                "confidence": ""
+                "label": pred_label,
+                "confidence": pred_conf
             })
-    else:
-        # Simulate the 18,103 empty unlabelled rows for today's mentor demonstration
+
+    # Pad remaining rows up to 20,000 universe rows with empty placeholders if needed
+    if len(output_rows) < TARGET_UNIVERSE_ROWS:
         unlabelled_needed = TARGET_UNIVERSE_ROWS - len(output_rows)
-        print(f"      Simulating {unlabelled_needed:,} unlabelled universe rows (empty labels for tomorrow)...")
+        print(f"      Padding with {unlabelled_needed:,} unlabelled universe rows (empty labels for tomorrow)...")
         for i in range(1, unlabelled_needed + 1):
             output_rows.append({
                 "id": f"u-{i:05d}",
