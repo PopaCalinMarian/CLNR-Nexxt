@@ -314,18 +314,40 @@ def make_judge():
                                           l2_regularization=1.0, random_state=0)
 
 
-def to_output(ids, judge, F):
-    P = judge.predict_proba(F); cls = list(judge.classes_)
+def to_output(ids, judge, F, tau=0.65):
+    P = judge.predict_proba(F)
+    cls = list(judge.classes_)
     out = []
-    for i, p in zip(ids, P):
-        lab = cls[int(np.argmax(p))]
-        if lab == "unsure":
+
+    idx_t = cls.index("true") if "true" in cls else -1
+    idx_f = cls.index("false") if "false" in cls else -1
+    idx_u = cls.index("unsure") if "unsure" in cls else -1
+
+    for (i, p), (_, row) in zip(zip(ids, P), F.iterrows()):
+        pt = p[idx_t] if idx_t >= 0 else 0.0
+        pf = p[idx_f] if idx_f >= 0 else 0.0
+        pu = p[idx_u] if idx_u >= 0 else 0.0
+        c = max(pt, pf) / max(pt + pf, 1e-9)
+
+        # Output 'unsure' when:
+        # 1. Direct argmax is unsure, OR
+        # 2. pu > 0.20 (compensates for 2% prior in training data), OR
+        # 3. Model confidence is ambiguous (c < tau), OR
+        # 4. Text is speculative / rumour without matching KB state
+        is_unsure = (
+            (idx_u >= 0 and np.argmax(p) == idx_u) or
+            (pu > 0.20) or
+            (c < tau) or
+            (bool(row.get("hedge", 0)) and not bool(row.get("cur_match", 0)))
+        )
+
+        if is_unsure:
             out.append((i, "unsure", ""))
+        elif pt >= pf:
+            out.append((i, "true", f"{min(1.0, max(0.5, c)):.3f}"))
         else:
-            # confidence among the two decisive classes, clipped to 0.5..1
-            pt, pf = p[cls.index("true")], p[cls.index("false")]
-            c = max(pt, pf) / max(pt + pf, 1e-9)
-            out.append((i, lab, f"{min(1.0, max(0.5, c)):.3f}"))
+            out.append((i, "false", f"{min(1.0, max(0.5, c)):.3f}"))
+
     return pd.DataFrame(out, columns=["id", "label", "confidence"])
 
 
