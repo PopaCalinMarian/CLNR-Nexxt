@@ -41,6 +41,8 @@ export function Shell({ title, sub, children }: { title: string; sub: string; ch
                 {n.label}
               </Link>
             ))}
+            {/* the live run is served by frontend/server.py (the real Python system) */}
+            <a href="http://localhost:8000/" className="nav-link">Live run</a>
           </nav>
           <ThemeToggle />
         </div>

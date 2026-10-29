@@ -4,71 +4,113 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hype or Truth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Urbanist:wght@300;400;600&display=swap">
 <style>
-:root { --blue: #2859B5; --lime: #D7F13B; --ink: #0A0A0A; --paper: #FCFCFC; --gray: #CED3DC; --t: #1f8a4c; --f: #c0392b; --u: #7a7f8a; }
-* { box-sizing: border-box; }
-body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--paper); color: var(--ink); }
-header { background: var(--blue); color: var(--paper); padding: 20px 16px; }
-header h1 { margin: 0; font-size: 26px; }
-header p { margin: 4px 0 0; opacity: .85; }
-main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 24px; }
-section h2 { font-size: 18px; margin: 0 0 8px; }
+/* tokens copied from hype-arena-website/src/styles.css so every page shares one theme */
+:root {
+  --background: oklch(0.955 0.015 85); --foreground: oklch(0.42 0.17 262); --card: oklch(0.975 0.01 85);
+  --primary: oklch(0.47 0.19 262); --primary-foreground: oklch(0.96 0.015 85); --muted: oklch(0.925 0.02 85);
+  --muted-foreground: oklch(0.55 0.08 262); --accent: oklch(0.9 0.04 255); --destructive: oklch(0.58 0.2 28);
+  --success: oklch(0.55 0.13 155); --warning: oklch(0.7 0.15 75); --border: oklch(0.47 0.19 262 / 0.35);
+  --sans: "Urbanist", sans-serif; --mono: "JetBrains Mono", monospace;
+}
+.dark {
+  --background: oklch(0.2 0.04 262); --foreground: oklch(0.93 0.02 85); --card: oklch(0.24 0.05 262);
+  --primary: oklch(0.78 0.11 255); --primary-foreground: oklch(0.2 0.04 262); --muted: oklch(0.27 0.05 262);
+  --muted-foreground: oklch(0.72 0.05 260); --accent: oklch(0.32 0.07 262); --destructive: oklch(0.7 0.18 28);
+  --success: oklch(0.75 0.14 155); --warning: oklch(0.82 0.14 80); --border: oklch(0.78 0.11 255 / 0.3);
+}
+* { box-sizing: border-box; border-color: var(--border); }
+body { margin: 0; font: 16px/1.5 var(--sans); background: var(--background); color: var(--foreground); }
+.top { border-bottom: 1px solid var(--border); }
+.top > div { max-width: 72rem; margin: 0 auto; height: 48px; display: flex; align-items: stretch; border-inline: 1px solid var(--border); }
+.brand { display: flex; align-items: center; padding: 0 20px; font-size: 18px; font-weight: 300; color: var(--primary); }
+.top nav { margin-left: auto; display: flex; }
+.nav-link { display: flex; align-items: center; border: 0; border-left: 1px solid var(--border); padding: 0 20px; font: 14px var(--sans); color: var(--foreground); background: none; text-decoration: none; cursor: pointer; }
+.nav-link:hover { background: var(--accent); }
+.nav-active, .nav-active:hover { background: var(--primary); color: var(--primary-foreground); }
+main { max-width: 72rem; margin: 0 auto; padding: 40px 24px; display: grid; gap: 24px; }
+h1 { margin: 0; font-size: 48px; font-weight: 300; letter-spacing: -.02em; color: var(--primary); }
+.lead { margin: 8px 0 0; max-width: 48rem; color: var(--muted-foreground); }
+section { border: 1px solid var(--border); border-radius: 8px; background: var(--card); padding: 20px; }
+section h2 { margin: 0 0 16px; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted-foreground); }
+section p { margin: 0 0 8px; }
 svg { width: 100%; height: auto; display: block; }
-svg .box { fill: #fff; stroke: var(--blue); stroke-width: 1.5; rx: 8; }
-svg .io { fill: var(--blue); }
-svg .io + text { fill: var(--paper); }
-svg .hot { fill: var(--lime); stroke: var(--ink); }
-svg text { font: 13px system-ui, sans-serif; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
-svg .sub { font-size: 11px; fill: #555; }
-svg .lane { font-size: 12px; font-weight: 700; fill: var(--blue); text-anchor: start; }
-svg path { stroke: var(--ink); stroke-width: 1.3; fill: none; marker-end: url(#a); }
+svg .box { fill: var(--background); stroke: var(--primary); stroke-width: 1.5; }
+svg .io { fill: var(--primary); }
+svg .hot { fill: var(--accent); stroke: var(--primary); stroke-width: 2; }
+svg text { font: 13px var(--sans); fill: var(--foreground); text-anchor: middle; dominant-baseline: middle; }
+svg .io-t { fill: var(--primary-foreground); }
+svg .sub { font: 11px var(--sans); fill: var(--muted-foreground); }
+svg .sub.io-t { fill: var(--primary-foreground); opacity: .8; }
+svg .lane { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; fill: var(--muted-foreground); text-anchor: start; }
+svg path { stroke: var(--primary); stroke-width: 1.3; fill: none; marker-end: url(#a); }
+svg #a path { fill: var(--primary); stroke: none; }
 svg.running .box { animation: pulse 1.2s infinite alternate; }
-@keyframes pulse { to { fill: #eef3ff; } }
-textarea { width: 100%; height: 160px; font: 12px ui-monospace, Menlo, monospace; padding: 8px; border: 1px solid var(--gray); border-radius: 6px; }
+@keyframes pulse { to { fill: var(--accent); } }
+textarea { width: 100%; height: 160px; font: 12px var(--mono); padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--foreground); outline: none; }
+textarea:focus { border-color: var(--primary); }
 .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
-button, label.btn { background: var(--blue); color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
-button.alt, label.btn { background: #fff; color: var(--blue); border: 1px solid var(--blue); }
-button:disabled { opacity: .5; cursor: wait; }
-#status { color: #555; }
+button, label.btn, select { border-radius: 6px; padding: 8px 14px; font: 600 14px var(--sans); cursor: pointer; border: 1px solid var(--primary); }
+button { background: var(--primary); color: var(--primary-foreground); }
+button.alt, label.btn, select { background: transparent; color: var(--primary); }
+button:disabled { opacity: .4; cursor: wait; }
+#status { font: 12px var(--mono); color: var(--muted-foreground); }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gray); vertical-align: top; }
-.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; color: #fff; font-size: 12px; font-weight: 600; }
-.true { background: var(--t); } .false { background: var(--f); } .unsure { background: var(--u); }
+th { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted-foreground); }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+td:first-child, td.num { font: 12px var(--mono); }
+td:first-child, td:nth-child(2) { white-space: nowrap; }
+.pill { border-radius: 2px; padding: 2px 6px; font: 700 10px var(--mono); text-transform: uppercase; }
+.true { background: color-mix(in oklch, var(--success) 20%, transparent); color: var(--success); }
+.false { background: color-mix(in oklch, var(--destructive) 20%, transparent); color: var(--destructive); }
+.unsure { background: color-mix(in oklch, var(--warning) 20%, transparent); color: var(--warning); }
 .wrap { overflow-x: auto; }
-.stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
-.stats b { font-size: 20px; display: block; }
-code { font-size: 11px; color: #555; word-break: break-all; }
+.stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 12px; }
+.stats b { font-size: 28px; font-weight: 300; display: block; color: var(--primary); }
+code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break-all; }
 </style>
 </head>
 <body>
-<header>
-  <h1>Hype or Truth</h1>
-  <p>Our system for the QA DNA challenge: labels rows about Hooly true / false / unsure and writes 1,000 new true claims. No LLM inside: lexicon matching, a linear router, a temporal knowledge base and gradient-boosted trees.</p>
-</header>
+<header class="top"><div>
+  <span class="brand">hooly{lab}</span>
+  <nav>
+    <a class="nav-link" href="http://localhost:5173/claims">New claims</a>
+    <a class="nav-link" href="http://localhost:5173/how-it-works">How it works</a>
+    <a class="nav-link" href="http://localhost:5173/classifier">Classifier</a>
+    <a class="nav-link nav-active" href="/">Live run</a>
+  </nav>
+  <button class="nav-link" id="theme" aria-label="Toggle dark theme">Dark</button>
+</div></header>
 <main>
+<div>
+  <h1>Hype or Truth</h1>
+  <p class="lead">Our system labels rows about Hooly true / false / unsure and writes 1,000 new true claims. No LLM inside: lexicon matching, a linear router, a temporal knowledge base and gradient-boosted trees.</p>
+</div>
 <section>
   <h2>Architecture</h2>
   <svg id="diagram" viewBox="0 0 1160 330" role="img" aria-label="Architecture: input rows flow through subject finder, fact router, value extractor, knowledge base, evidence features and a tree judge to labels; practice rows build a fact tree that feeds a claim builder, validator and selector to 1,000 claims; both write output.csv">
-    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--ink);stroke:none;marker-end:none"/></marker></defs>
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z"/></marker></defs>
     <text class="lane" x="10" y="16">Job 1 · Classify the rows (src/label_rows.py)</text>
-    <rect class="io" x="10" y="40" width="110" height="60" rx="8"/><text x="65" y="62">universe.csv</text><text x="65" y="80" class="sub" style="fill:#dfe7f7">id, text, date</text>
+    <rect class="io" x="10" y="40" width="110" height="60" rx="8"/><text x="65" y="62" class="io-t">universe.csv</text><text x="65" y="80" class="sub io-t">id, text, date</text>
     <rect class="box" x="150" y="40" width="120" height="60"/><text x="210" y="62">Subject finder</text><text x="210" y="80" class="sub">lexicon + page context</text>
     <rect class="box" x="290" y="40" width="120" height="60"/><text x="350" y="62">Fact router</text><text x="350" y="80" class="sub">TF-IDF + linear SVM</text>
     <rect class="box" x="430" y="40" width="120" height="60"/><text x="490" y="62">Value extractor</text><text x="490" y="80" class="sub">numbers, dates, names</text>
     <rect class="box" x="570" y="40" width="140" height="60"/><text x="640" y="62">Evidence features</text><text x="640" y="80" class="sub">current / old / lie / votes</text>
-    <rect class="hot" x="730" y="40" width="130" height="60" rx="8"/><text x="795" y="62">Tree judge</text><text x="795" y="80" class="sub">gradient boosting</text>
+    <rect class="hot" x="730" y="40" width="130" height="60"/><text x="795" y="62">Tree judge</text><text x="795" y="80" class="sub">gradient boosting</text>
     <rect class="box" x="880" y="40" width="120" height="60"/><text x="940" y="62">Label + conf.</text><text x="940" y="80" class="sub">unsure if p &lt; τ</text>
-    <rect class="io" x="430" y="140" width="250" height="44" rx="8"/><text x="555" y="162">Practice rows + lexicon → temporal KB</text>
+    <rect class="io" x="430" y="140" width="250" height="44" rx="8"/><text x="555" y="162" class="io-t">Practice rows + lexicon → temporal KB</text>
     <path d="M120,70H148"/><path d="M270,70H288"/><path d="M410,70H428"/><path d="M550,70H568"/><path d="M710,70H728"/><path d="M860,70H878"/>
     <path d="M600,140V102"/><path d="M1000,70H1040V150"/>
     <text class="lane" x="10" y="216">Job 2 · Generate 1,000 claims (generate_claims.py)</text>
     <rect class="box" x="150" y="240" width="140" height="60"/><text x="220" y="262">Fact tree</text><text x="220" y="280" class="sub">value periods per slot</text>
     <rect class="box" x="310" y="240" width="150" height="60"/><text x="385" y="262">Candidate builder</text><text x="385" y="280" class="sub">fact·compare·change·event·relation</text>
     <rect class="box" x="480" y="240" width="140" height="60"/><text x="550" y="262">Referee validator</text><text x="550" y="280" class="sub">claim-forms, new, unique</text>
-    <rect class="hot" x="640" y="240" width="140" height="60" rx="8"/><text x="710" y="262">Selector</text><text x="710" y="280" class="sub">round-robin, conf ≥ 0.7</text>
+    <rect class="hot" x="640" y="240" width="140" height="60"/><text x="710" y="262">Selector</text><text x="710" y="280" class="sub">round-robin, conf ≥ 0.7</text>
     <rect class="box" x="800" y="240" width="120" height="60"/><text x="860" y="262">1,000 claims</text><text x="860" y="280" class="sub">label true + conf.</text>
     <path d="M500,184L230,238"/><path d="M290,270H308"/><path d="M460,270H478"/><path d="M620,270H638"/><path d="M780,270H798"/><path d="M920,270H1040V202"/>
-    <rect class="io" x="990" y="152" width="160" height="48" rx="8"/><text x="1070" y="176">/output/output.csv</text>
+    <rect class="io" x="990" y="152" width="160" height="48" rx="8"/><text x="1070" y="176" class="io-t">/output/output.csv</text>
   </svg>
 </section>
 <section>
@@ -87,7 +129,7 @@ code { font-size: 11px; color: #555; word-break: break-all; }
   <h2>Labels</h2>
   <div class="stats" id="stats"></div>
   <div class="wrap"><table><thead><tr><th>id</th><th>date</th><th>text</th><th>label</th><th>confidence</th></tr></thead><tbody id="labels"></tbody></table></div>
-  <h2 style="margin-top:24px">Generated claims <span id="ccount"></span></h2>
+  <h2 style="margin-top:32px">Generated claims <span id="ccount"></span></h2>
   <div class="bar"><select id="ctype"><option value="">all types</option><option>fact</option><option>compare</option><option>change</option><option>at_event</option><option>relation</option></select></div>
   <div class="wrap"><table><thead><tr><th>id</th><th>type</th><th>text / form</th><th>confidence</th></tr></thead><tbody id="claims"></tbody></table></div>
 </section>
@@ -121,7 +163,7 @@ function render() {
   result.labels.forEach(l => n[l.label]++);
   $('stats').innerHTML = `<div><b>${result.labels.length}</b>rows</div>` +
     Object.entries(n).map(([k, v]) => `<div><b>${v}</b><span class="pill ${k}">${k}</span></div>`).join('');
-  $('labels').innerHTML = result.labels.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.date)}</td><td>${esc(l.text)}</td><td><span class="pill ${l.label}">${l.label}</span></td><td>${l.confidence === '' ? '—' : Number(l.confidence).toFixed(3)}</td></tr>`).join('');
+  $('labels').innerHTML = result.labels.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.date)}</td><td>${esc(l.text)}</td><td><span class="pill ${l.label}">${l.label}</span></td><td class="num">${l.confidence === '' ? '—' : Number(l.confidence).toFixed(3)}</td></tr>`).join('');
   $('ccount').textContent = `(${result.claims.length}: ` + Object.entries(result.by_type).map(([k, v]) => `${k} ${v}`).join(', ') + ')';
   renderClaims();
 }
@@ -129,7 +171,7 @@ function render() {
 function renderClaims() {
   const type = $('ctype').value;
   $('claims').innerHTML = result.claims.filter(c => !type || c.type === type).slice(0, 200).map(c =>
-    `<tr><td>${esc(c.id)}</td><td>${c.type}</td><td>${esc(c.text)}<br><code>${esc(JSON.stringify(c.form))}</code></td><td>${Number(c.confidence).toFixed(2)}</td></tr>`).join('');
+    `<tr><td>${esc(c.id)}</td><td>${c.type}</td><td>${esc(c.text)}<br><code>${esc(JSON.stringify(c.form))}</code></td><td class="num">${Number(c.confidence).toFixed(2)}</td></tr>`).join('');
 }
 $('ctype').onchange = renderClaims;
 
@@ -141,6 +183,14 @@ $('dl').onclick = () => {
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' })), download: 'output.csv' });
   a.click(); URL.revokeObjectURL(a.href);
 };
+
+function setTheme(d) {
+  document.documentElement.classList.toggle('dark', d);
+  $('theme').textContent = d ? 'Light' : 'Dark';
+  try { localStorage.setItem('theme', d ? 'dark' : 'light'); } catch {}
+}
+try { setTheme(localStorage.getItem('theme') === 'dark'); } catch {}
+$('theme').onclick = () => setTheme(!document.documentElement.classList.contains('dark'));
 
 loadSample();
 </script>
