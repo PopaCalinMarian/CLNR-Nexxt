@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hype or Truth</title>
+<style>
+:root { --blue: #2859B5; --lime: #D7F13B; --ink: #0A0A0A; --paper: #FCFCFC; --gray: #CED3DC; --t: #1f8a4c; --f: #c0392b; --u: #7a7f8a; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--paper); color: var(--ink); }
+header { background: var(--blue); color: var(--paper); padding: 20px 16px; }
+header h1 { margin: 0; font-size: 26px; }
+header p { margin: 4px 0 0; opacity: .85; }
+main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 24px; }
+section h2 { font-size: 18px; margin: 0 0 8px; }
+svg { width: 100%; height: auto; display: block; }
+svg .box { fill: #fff; stroke: var(--blue); stroke-width: 1.5; rx: 8; }
+svg .io { fill: var(--blue); }
+svg .io + text { fill: var(--paper); }
+svg .hot { fill: var(--lime); stroke: var(--ink); }
+svg text { font: 13px system-ui, sans-serif; fill: var(--ink); text-anchor: middle; dominant-baseline: middle; }
+svg .sub { font-size: 11px; fill: #555; }
+svg .lane { font-size: 12px; font-weight: 700; fill: var(--blue); text-anchor: start; }
+svg path { stroke: var(--ink); stroke-width: 1.3; fill: none; marker-end: url(#a); }
+svg.running .box { animation: pulse 1.2s infinite alternate; }
+@keyframes pulse { to { fill: #eef3ff; } }
+textarea { width: 100%; height: 160px; font: 12px ui-monospace, Menlo, monospace; padding: 8px; border: 1px solid var(--gray); border-radius: 6px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+button, label.btn { background: var(--blue); color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
+button.alt, label.btn { background: #fff; color: var(--blue); border: 1px solid var(--blue); }
+button:disabled { opacity: .5; cursor: wait; }
+#status { color: #555; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--gray); vertical-align: top; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 99px; color: #fff; font-size: 12px; font-weight: 600; }
+.true { background: var(--t); } .false { background: var(--f); } .unsure { background: var(--u); }
+.wrap { overflow-x: auto; }
+.stats { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+.stats b { font-size: 20px; display: block; }
+code { font-size: 11px; color: #555; word-break: break-all; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hype or Truth</h1>
+  <p>Our system for the QA DNA challenge: labels rows about Hooly true / false / unsure and writes 1,000 new true claims. No LLM inside: lexicon matching, a linear router, a temporal knowledge base and gradient-boosted trees.</p>
+</header>
+<main>
+<section>
+  <h2>Architecture</h2>
+  <svg id="diagram" viewBox="0 0 1160 330" role="img" aria-label="Architecture: input rows flow through subject finder, fact router, value extractor, knowledge base, evidence features and a tree judge to labels; practice rows build a fact tree that feeds a claim builder, validator and selector to 1,000 claims; both write output.csv">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" style="fill:var(--ink);stroke:none;marker-end:none"/></marker></defs>
+    <text class="lane" x="10" y="16">Job 1 · Classify the rows (src/label_rows.py)</text>
+    <rect class="io" x="10" y="40" width="110" height="60" rx="8"/><text x="65" y="62">universe.csv</text><text x="65" y="80" class="sub" style="fill:#dfe7f7">id, text, date</text>
+    <rect class="box" x="150" y="40" width="120" height="60"/><text x="210" y="62">Subject finder</text><text x="210" y="80" class="sub">lexicon + page context</text>
+    <rect class="box" x="290" y="40" width="120" height="60"/><text x="350" y="62">Fact router</text><text x="350" y="80" class="sub">TF-IDF + linear SVM</text>
+    <rect class="box" x="430" y="40" width="120" height="60"/><text x="490" y="62">Value extractor</text><text x="490" y="80" class="sub">numbers, dates, names</text>
+    <rect class="box" x="570" y="40" width="140" height="60"/><text x="640" y="62">Evidence features</text><text x="640" y="80" class="sub">current / old / lie / votes</text>
+    <rect class="hot" x="730" y="40" width="130" height="60" rx="8"/><text x="795" y="62">Tree judge</text><text x="795" y="80" class="sub">gradient boosting</text>
+    <rect class="box" x="880" y="40" width="120" height="60"/><text x="940" y="62">Label + conf.</text><text x="940" y="80" class="sub">unsure if p &lt; τ</text>
+    <rect class="io" x="430" y="140" width="250" height="44" rx="8"/><text x="555" y="162">Practice rows + lexicon → temporal KB</text>
+    <path d="M120,70H148"/><path d="M270,70H288"/><path d="M410,70H428"/><path d="M550,70H568"/><path d="M710,70H728"/><path d="M860,70H878"/>
+    <path d="M600,140V102"/><path d="M1000,70H1040V150"/>
+    <text class="lane" x="10" y="216">Job 2 · Generate 1,000 claims (generate_claims.py)</text>
+    <rect class="box" x="150" y="240" width="140" height="60"/><text x="220" y="262">Fact tree</text><text x="220" y="280" class="sub">value periods per slot</text>
+    <rect class="box" x="310" y="240" width="150" height="60"/><text x="385" y="262">Candidate builder</text><text x="385" y="280" class="sub">fact·compare·change·event·relation</text>
+    <rect class="box" x="480" y="240" width="140" height="60"/><text x="550" y="262">Referee validator</text><text x="550" y="280" class="sub">claim-forms, new, unique</text>
+    <rect class="hot" x="640" y="240" width="140" height="60" rx="8"/><text x="710" y="262">Selector</text><text x="710" y="280" class="sub">round-robin, conf ≥ 0.7</text>
+    <rect class="box" x="800" y="240" width="120" height="60"/><text x="860" y="262">1,000 claims</text><text x="860" y="280" class="sub">label true + conf.</text>
+    <path d="M500,184L230,238"/><path d="M290,270H308"/><path d="M460,270H478"/><path d="M620,270H638"/><path d="M780,270H798"/><path d="M920,270H1040V202"/>
+    <rect class="io" x="990" y="152" width="160" height="48" rx="8"/><text x="1070" y="176">/output/output.csv</text>
+  </svg>
+</section>
+<section>
+  <h2>Run the system live</h2>
+  <p>Paste rows (<code>id,text,date,label</code>; rows with an empty label get classified) or load the 20-row contest sample.</p>
+  <textarea id="csv" spellcheck="false"></textarea>
+  <div class="bar">
+    <button class="alt" id="load">Load sample</button>
+    <label class="btn">Upload CSV<input type="file" id="file" accept=".csv,text/csv" hidden></label>
+    <button id="run">Run system</button>
+    <button class="alt" id="dl" hidden>Download output.csv</button>
+    <span id="status" role="status"></span>
+  </div>
+</section>
+<section id="out" hidden>
+  <h2>Labels</h2>
+  <div class="stats" id="stats"></div>
+  <div class="wrap"><table><thead><tr><th>id</th><th>date</th><th>text</th><th>label</th><th>confidence</th></tr></thead><tbody id="labels"></tbody></table></div>
+  <h2 style="margin-top:24px">Generated claims <span id="ccount"></span></h2>
+  <div class="bar"><select id="ctype"><option value="">all types</option><option>fact</option><option>compare</option><option>change</option><option>at_event</option><option>relation</option></select></div>
+  <div class="wrap"><table><thead><tr><th>id</th><th>type</th><th>text / form</th><th>confidence</th></tr></thead><tbody id="claims"></tbody></table></div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let result = null;
+
+async function loadSample() { $('csv').value = await (await fetch('/sample.csv')).text(); }
+$('load').onclick = loadSample;
+$('file').onchange = async e => { const f = e.target.files[0]; if (f) $('csv').value = await f.text(); };
+
+$('run').onclick = async () => {
+  $('run').disabled = true; $('diagram').classList.add('running');
+  $('status').textContent = 'Training on practice rows, labelling, generating claims…';
+  const t = performance.now();
+  try {
+    const r = await fetch('/run', { method: 'POST', headers: { 'Content-Type': 'text/csv' }, body: $('csv').value });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+    result = j; render();
+    $('status').textContent = `Done in ${((performance.now() - t) / 1000).toFixed(1)}s (label ${j.seconds.label}s, generate ${j.seconds.generate}s)`;
+  } catch (e) { $('status').textContent = 'Error: ' + e.message; }
+  $('run').disabled = false; $('diagram').classList.remove('running');
+};
+
+function render() {
+  $('out').hidden = false; $('dl').hidden = false;
+  const n = { true: 0, false: 0, unsure: 0 };
+  result.labels.forEach(l => n[l.label]++);
+  $('stats').innerHTML = `<div><b>${result.labels.length}</b>rows</div>` +
+    Object.entries(n).map(([k, v]) => `<div><b>${v}</b><span class="pill ${k}">${k}</span></div>`).join('');
+  $('labels').innerHTML = result.labels.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.date)}</td><td>${esc(l.text)}</td><td><span class="pill ${l.label}">${l.label}</span></td><td>${l.confidence === '' ? '—' : Number(l.confidence).toFixed(3)}</td></tr>`).join('');
+  $('ccount').textContent = `(${result.claims.length}: ` + Object.entries(result.by_type).map(([k, v]) => `${k} ${v}`).join(', ') + ')';
+  renderClaims();
+}
+
+function renderClaims() {
+  const type = $('ctype').value;
+  $('claims').innerHTML = result.claims.filter(c => !type || c.type === type).slice(0, 200).map(c =>
+    `<tr><td>${esc(c.id)}</td><td>${c.type}</td><td>${esc(c.text)}<br><code>${esc(JSON.stringify(c.form))}</code></td><td>${Number(c.confidence).toFixed(2)}</td></tr>`).join('');
+}
+$('ctype').onchange = renderClaims;
+
+$('dl').onclick = () => {
+  const q = v => /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  const lines = ['id,type,text,form,label,confidence',
+    ...result.labels.map(l => [l.id, '', '', '', l.label, l.confidence].map(q).join(',')),
+    ...result.claims.map(c => [c.id, c.type, c.text, JSON.stringify(c.form), 'true', String(c.confidence)].map(q).join(','))];
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' })), download: 'output.csv' });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+loadSample();
+</script>
+</body>
+</html>
