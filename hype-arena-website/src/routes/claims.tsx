@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Panel, Shell } from "@/components/Shell";
-import { generateClaims, toPracticePlusCsv, TYPES, type ClaimType } from "@/lib/claims";
+import { generateClaims, toCsv, toPracticePlusCsv, TYPES, type ClaimType } from "@/lib/claims";
 
 export const Route = createFileRoute("/claims")({
   head: () => ({
@@ -24,10 +24,10 @@ function ClaimsPage() {
   const [showRejected, setShowRejected] = useState(false);
   const list = r.claims.filter((c) => (type === "all" || c.type === type) && (!q || c.text.toLowerCase().includes(q.toLowerCase())));
 
-  const download = () => {
-    const url = URL.createObjectURL(new Blob([toPracticePlusCsv(r.claims)], { type: "text/csv;charset=utf-8" }));
+  const download = (csv: string, name: string) => {
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
-    a.href = url; a.download = "practice.csv";
+    a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 30_000);
   };
@@ -47,7 +47,8 @@ function ClaimsPage() {
           </div>
         </Panel>
         <div className="flex flex-col gap-2">
-          <button className="field" onClick={download}>Download CSV</button>
+          <button className="field" onClick={() => download(toCsv(r.claims), "claims.csv")}>Download claims CSV</button>
+          <button className="field" onClick={() => download(toPracticePlusCsv(r.claims), "practice.csv")}>Download practice + claims</button>
           <button className="field" onClick={() => setShowRejected((x) => !x)}>{showRejected ? "Show claims" : `Rejected (${r.rejected.length})`}</button>
         </div>
       </div>

@@ -38,6 +38,8 @@ def run_system(csv_text):
     rows = [r for r in csv.DictReader(io.StringIO(csv_text.lstrip("﻿")))
             if (r.get("id") or "").strip() and (r.get("text") or "").strip()]
     unlabelled = [r for r in rows if not (r.get("label") or "").strip()]
+    if not unlabelled:
+        raise ValueError("no rows to label: expected a header id,text,date,label and rows with an empty label")
     practice = read_practice(PRACTICE)
     lexicon = json.loads(LEXICON.read_text(encoding="utf-8"))
 
@@ -85,6 +87,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(400, json.dumps({"error": "send a CSV body up to 8 MiB"}), "application/json")
         try:
             result = run_system(self.rfile.read(n).decode("utf-8"))
+        except ValueError as e:  # bad input: say what is wrong
+            return self._send(400, json.dumps({"error": str(e)}), "application/json")
         except Exception as e:  # show the failure in the page instead of a dropped connection
             return self._send(500, json.dumps({"error": f"{type(e).__name__}: {e}"}), "application/json")
         self._send(200, json.dumps(result, ensure_ascii=False), "application/json")

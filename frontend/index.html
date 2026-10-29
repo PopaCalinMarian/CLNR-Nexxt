@@ -56,7 +56,7 @@ button, label.btn, select { border-radius: 6px; padding: 8px 14px; font: 600 14p
 button { background: var(--primary); color: var(--primary-foreground); }
 button.alt, label.btn, select { background: transparent; color: var(--primary); }
 button:disabled { opacity: .4; cursor: wait; }
-#status { font: 12px var(--mono); color: var(--muted-foreground); }
+#status, .note { font: 12px var(--mono); color: var(--muted-foreground); }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted-foreground); }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -69,6 +69,8 @@ td:first-child, td:nth-child(2) { white-space: nowrap; }
 .wrap { overflow-x: auto; }
 .stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 12px; }
 .stats b { font-size: 28px; font-weight: 300; display: block; color: var(--primary); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+label.btn:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
 code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break-all; }
 </style>
 </head>
@@ -119,7 +121,7 @@ code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break
   <textarea id="csv" spellcheck="false"></textarea>
   <div class="bar">
     <button class="alt" id="load">Load sample</button>
-    <label class="btn">Upload CSV<input type="file" id="file" accept=".csv,text/csv" hidden></label>
+    <label class="btn">Upload CSV<input type="file" id="file" accept=".csv,text/csv" class="sr"></label>
     <button id="run">Run system</button>
     <button class="alt" id="dl" hidden>Download output.csv</button>
     <span id="status" role="status"></span>
@@ -130,7 +132,7 @@ code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break
   <div class="stats" id="stats"></div>
   <div class="wrap"><table><thead><tr><th>id</th><th>date</th><th>text</th><th>label</th><th>confidence</th></tr></thead><tbody id="labels"></tbody></table></div>
   <h2 style="margin-top:32px">Generated claims <span id="ccount"></span></h2>
-  <div class="bar"><select id="ctype"><option value="">all types</option><option>fact</option><option>compare</option><option>change</option><option>at_event</option><option>relation</option></select></div>
+  <div class="bar"><select id="ctype" aria-label="Filter claims by type"><option value="">all types</option><option>fact</option><option>compare</option><option>change</option><option>at_event</option><option>relation</option></select><span id="cshown" class="note"></span></div>
   <div class="wrap"><table><thead><tr><th>id</th><th>type</th><th>text / form</th><th>confidence</th></tr></thead><tbody id="claims"></tbody></table></div>
 </section>
 </main>
@@ -141,7 +143,7 @@ let result = null;
 
 async function loadSample() { $('csv').value = await (await fetch('/sample.csv')).text(); }
 $('load').onclick = loadSample;
-$('file').onchange = async e => { const f = e.target.files[0]; if (f) $('csv').value = await f.text(); };
+$('file').onchange = async e => { const f = e.target.files[0]; if (f) $('csv').value = await f.text(); e.target.value = ''; };
 
 $('run').onclick = async () => {
   $('run').disabled = true; $('diagram').classList.add('running');
@@ -170,7 +172,9 @@ function render() {
 
 function renderClaims() {
   const type = $('ctype').value;
-  $('claims').innerHTML = result.claims.filter(c => !type || c.type === type).slice(0, 200).map(c =>
+  const list = result.claims.filter(c => !type || c.type === type);
+  $('cshown').textContent = list.length > 200 ? `showing 200 of ${list.length}; download output.csv for all` : `${list.length} shown`;
+  $('claims').innerHTML = list.slice(0, 200).map(c =>
     `<tr><td>${esc(c.id)}</td><td>${c.type}</td><td>${esc(c.text)}<br><code>${esc(JSON.stringify(c.form))}</code></td><td class="num">${Number(c.confidence).toFixed(2)}</td></tr>`).join('');
 }
 $('ctype').onchange = renderClaims;
@@ -181,7 +185,7 @@ $('dl').onclick = () => {
     ...result.labels.map(l => [l.id, '', '', '', l.label, l.confidence].map(q).join(',')),
     ...result.claims.map(c => [c.id, c.type, c.text, JSON.stringify(c.form), 'true', String(c.confidence)].map(q).join(','))];
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' })), download: 'output.csv' });
-  a.click(); URL.revokeObjectURL(a.href);
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 30000);
 };
 
 function setTheme(d) {

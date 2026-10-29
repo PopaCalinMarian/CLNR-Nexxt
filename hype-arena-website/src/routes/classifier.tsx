@@ -85,10 +85,13 @@ function ClassifierPage() {
           restart
         </button>
         <button
-          onClick={() => setPlaying((p) => !p)}
+          onClick={() => {
+            // play on a finished run starts it over instead of sitting on the verdict
+            if (done) { setStep(-1); setPlaying(true); } else setPlaying((p) => !p);
+          }}
           className="border border-border px-3 py-1.5 text-foreground hover:border-primary hover:text-primary"
         >
-          {playing ? "pause" : "play"}
+          {playing && !done ? "pause" : "play"}
         </button>
         <button
           onClick={() => { setPlaying(false); setStep((s) => Math.min(s + 1, PIPELINE.length)); }}

@@ -19,4 +19,9 @@ assert len(res["claims"]) == 1000
 assert len({c["id"] for c in res["claims"]}) == 1000
 sample_texts = {l["text"] for l in res["labels"]}
 assert not any(c["text"] in sample_texts for c in res["claims"])
+try:
+    run_system("id,text,date,label\n")
+    raise AssertionError("no unlabelled rows must be rejected")
+except ValueError:
+    pass
 print("ok")
