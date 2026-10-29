@@ -68,11 +68,3 @@ export function trueChanges(pts: TimelinePoint[]): TimelinePoint[] {
   for (const p of pts) if (p.label === "true" && out.at(-1)?.value !== p.value) out.push(p);
   return out;
 }
-
-export function countBy<T>(xs: T[], key: (x: T) => string): [string, number][] {
-  const m = new Map<string, number>();
-  for (const x of xs) m.set(key(x), (m.get(key(x)) ?? 0) + 1);
-  return [...m.entries()].sort((a, b) => b[1] - a[1]);
-}
-
-export const allFacts = rows.flatMap((r) => r.form.map((f) => ({ ...f, row: r })));

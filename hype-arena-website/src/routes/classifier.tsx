@@ -74,7 +74,7 @@ function ClassifierPage() {
   return (
     <Shell
       title="How the classifier decides"
-      sub="One sentence walks through six blocks. Press play and watch each block hand its result to the next."
+      sub="One sentence walks through six blocks. Each new block lands on top and pushes the older ones down, so read from the bottom up."
     >
       {/* controls */}
       <div className="mb-6 flex items-center gap-3 font-mono text-xs">
@@ -98,58 +98,17 @@ function ClassifierPage() {
         </button>
       </div>
 
-      {/* the sentence being judged */}
-      <motion.section layout className="border border-primary bg-card p-5">
-        <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">the sentence</p>
-        <p className="mt-2 font-mono text-sm text-foreground">“{ex.row.text}”</p>
-        <p className="mt-2 font-mono text-xs text-muted-foreground">judged on {ex.row.date}</p>
-      </motion.section>
-
-      {/* blocks appear one at a time */}
-      <div className="mt-2 space-y-2">
-        <AnimatePresence>
-          {PIPELINE.slice(0, step + 1).map((b, i) => (
-            <motion.div
-              key={b.id}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-            >
-              <div className="flex justify-center py-1 font-mono text-lg text-muted-foreground">↓</div>
-              <section className={`border bg-card p-5 ${i === step && !done ? "border-primary" : "border-border"}`}>
-                <div className="flex flex-wrap items-baseline gap-x-4">
-                  <h2 className="font-display text-xl font-light text-primary">{b.name}</h2>
-                  <p className="text-sm text-muted-foreground">{b.short}</p>
-                </div>
-                {b.live ? (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                    className="mt-3 border border-border p-3"
-                  >
-                    <Result block={b} ex={ex} />
-                  </motion.div>
-                ) : (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                    className="mt-3 border border-border p-3 font-mono text-xs text-muted-foreground"
-                  >
-                    {b.id === "router" ? `learned from the practice rows → ${ex.subjects[0] ?? "?"}‖price` : "learned from the practice rows → true · false · unsure"}
-                  </motion.p>
-                )}
-              </section>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {/* verdict */}
+      {/* newest block on top: older ones slide down, the sentence being judged sits at the bottom as the origin */}
+      <div className="space-y-2">
         <AnimatePresence>
           {done && (
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-              <div className="flex justify-center py-1 font-mono text-lg text-muted-foreground">↓</div>
+            <motion.div
+              key="verdict"
+              initial={{ opacity: 0, height: 0, y: -24 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+              style={{ overflow: "hidden" }}
+            >
               <section className="border border-primary bg-card p-5">
                 <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">verdict</p>
                 <p className="mt-2 flex items-center gap-2 text-sm">
@@ -157,9 +116,56 @@ function ClassifierPage() {
                   <span className="text-muted-foreground">the text holds exactly the value that was valid on {ex.row.date}.</span>
                 </p>
               </section>
+              <div className="flex justify-center py-1 font-mono text-lg text-muted-foreground">↑</div>
             </motion.div>
           )}
+          {PIPELINE.slice(0, step + 1)
+            .map((b, i) => ({ b, i }))
+            .reverse()
+            .map(({ b, i }) => (
+              <motion.div
+                key={b.id}
+                initial={{ opacity: 0, height: 0, y: -24 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <section className={`border bg-card p-5 ${i === step && !done ? "border-primary" : "border-border"}`}>
+                  <div className="flex flex-wrap items-baseline gap-x-4">
+                    <h2 className="font-display text-xl font-light text-primary">{b.name}</h2>
+                    <p className="text-sm text-muted-foreground">{b.short}</p>
+                  </div>
+                  {b.live ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                      className="mt-3 border border-border p-3"
+                    >
+                      <Result block={b} ex={ex} />
+                    </motion.div>
+                  ) : (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                      className="mt-3 border border-border p-3 font-mono text-xs text-muted-foreground"
+                    >
+                      {b.id === "router" ? `learned from the practice rows → ${ex.subjects[0] ?? "?"}‖price` : "learned from the practice rows → true · false · unsure"}
+                    </motion.p>
+                  )}
+                </section>
+                <div className="flex justify-center py-1 font-mono text-lg text-muted-foreground">↑</div>
+              </motion.div>
+            ))}
         </AnimatePresence>
+
+        {/* the sentence being judged: the origin, always at the bottom */}
+        <section className="border border-primary bg-card p-5">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">the sentence</p>
+          <p className="mt-2 font-mono text-sm text-foreground">“{ex.row.text}”</p>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">judged on {ex.row.date}</p>
+        </section>
       </div>
     </Shell>
   );

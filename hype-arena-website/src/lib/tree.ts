@@ -40,7 +40,6 @@ export function slotOf(v: Fact["value"]): string {
   return v.kind;
 }
 export type AttrNode = { attribute: string; segments: Segment[]; falseValues: Obs[]; unsure: Obs[]; all: Obs[] };
-export type SubjectNode = { subject: string; aliases: string[]; attrs: AttrNode[] };
 
 const key = (v: Fact["value"]) => { const { op: _op, ...rest } = v; return formatValue(rest as Fact["value"]); };
 
@@ -78,16 +77,6 @@ export function buildTree(all: Row[] = rows, skipId?: string): Map<string, Map<s
   return tree;
 }
 export const tree = buildTree();
-
-export function subjectNodes(t = tree): SubjectNode[] {
-  return [...t.entries()]
-    .map(([subject, m]) => ({
-      subject,
-      aliases: lexicon.subjects.find((s) => s.name === subject)?.aliases ?? [],
-      attrs: [...m.values()].sort((a, b) => a.attribute.localeCompare(b.attribute)),
-    }))
-    .sort((a, b) => a.subject.localeCompare(b.subject));
-}
 
 /* ---------- 3. Navigation: walk the tree to the value valid on a date ---------- */
 export function segmentAt(node: AttrNode, date: string, slot?: string): Segment | null {

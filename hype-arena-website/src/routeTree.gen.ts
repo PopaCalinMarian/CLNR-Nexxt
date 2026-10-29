@@ -13,10 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ClaimsRouteImport } from './routes/claims'
 import { Route as ClassifierRouteImport } from './routes/classifier'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
-import { Route as LexiconRouteImport } from './routes/lexicon'
-import { Route as RowsRouteImport } from './routes/rows'
-import { Route as TimelineRouteImport } from './routes/timeline'
-import { Route as TreeRouteImport } from './routes/tree'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,46 +34,18 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LexiconRoute = LexiconRouteImport.update({
-  id: '/lexicon',
-  path: '/lexicon',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RowsRoute = RowsRouteImport.update({
-  id: '/rows',
-  path: '/rows',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TimelineRoute = TimelineRouteImport.update({
-  id: '/timeline',
-  path: '/timeline',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TreeRoute = TreeRouteImport.update({
-  id: '/tree',
-  path: '/tree',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/claims': typeof ClaimsRoute
   '/classifier': typeof ClassifierRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/lexicon': typeof LexiconRoute
-  '/rows': typeof RowsRoute
-  '/timeline': typeof TimelineRoute
-  '/tree': typeof TreeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/claims': typeof ClaimsRoute
   '/classifier': typeof ClassifierRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/lexicon': typeof LexiconRoute
-  '/rows': typeof RowsRoute
-  '/timeline': typeof TimelineRoute
-  '/tree': typeof TreeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,42 +53,13 @@ export interface FileRoutesById {
   '/claims': typeof ClaimsRoute
   '/classifier': typeof ClassifierRoute
   '/how-it-works': typeof HowItWorksRoute
-  '/lexicon': typeof LexiconRoute
-  '/rows': typeof RowsRoute
-  '/timeline': typeof TimelineRoute
-  '/tree': typeof TreeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/claims'
-    | '/classifier'
-    | '/how-it-works'
-    | '/lexicon'
-    | '/rows'
-    | '/timeline'
-    | '/tree'
+  fullPaths: '/' | '/claims' | '/classifier' | '/how-it-works'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/claims'
-    | '/classifier'
-    | '/how-it-works'
-    | '/lexicon'
-    | '/rows'
-    | '/timeline'
-    | '/tree'
-  id:
-    | '__root__'
-    | '/'
-    | '/claims'
-    | '/classifier'
-    | '/how-it-works'
-    | '/lexicon'
-    | '/rows'
-    | '/timeline'
-    | '/tree'
+  to: '/' | '/claims' | '/classifier' | '/how-it-works'
+  id: '__root__' | '/' | '/claims' | '/classifier' | '/how-it-works'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -128,10 +67,6 @@ export interface RootRouteChildren {
   ClaimsRoute: typeof ClaimsRoute
   ClassifierRoute: typeof ClassifierRoute
   HowItWorksRoute: typeof HowItWorksRoute
-  LexiconRoute: typeof LexiconRoute
-  RowsRoute: typeof RowsRoute
-  TimelineRoute: typeof TimelineRoute
-  TreeRoute: typeof TreeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,34 +99,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lexicon': {
-      id: '/lexicon'
-      path: '/lexicon'
-      fullPath: '/lexicon'
-      preLoaderRoute: typeof LexiconRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rows': {
-      id: '/rows'
-      path: '/rows'
-      fullPath: '/rows'
-      preLoaderRoute: typeof RowsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/timeline': {
-      id: '/timeline'
-      path: '/timeline'
-      fullPath: '/timeline'
-      preLoaderRoute: typeof TimelineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tree': {
-      id: '/tree'
-      path: '/tree'
-      fullPath: '/tree'
-      preLoaderRoute: typeof TreeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -200,10 +107,6 @@ const rootRouteChildren: RootRouteChildren = {
   ClaimsRoute: ClaimsRoute,
   ClassifierRoute: ClassifierRoute,
   HowItWorksRoute: HowItWorksRoute,
-  LexiconRoute: LexiconRoute,
-  RowsRoute: RowsRoute,
-  TimelineRoute: TimelineRoute,
-  TreeRoute: TreeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
