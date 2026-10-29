@@ -12,6 +12,12 @@ function ThemeToggle() {
   const [dark, setDark] = useState(false);
   // read the saved choice on every mount; only a click changes it
   useEffect(() => {
+    // the live run page (another port) passes its theme as ?theme= on the link back
+    const asked = new URLSearchParams(window.location.search).get("theme");
+    if (asked === "dark" || asked === "light") {
+      localStorage.setItem("theme", asked);
+      window.history.replaceState(window.history.state, "", window.location.pathname); // so a reload keeps later toggles
+    }
     const d = localStorage.getItem("theme") === "dark";
     document.documentElement.classList.toggle("dark", d);
     setDark(d);
@@ -42,7 +48,13 @@ export function Shell({ title, sub, children }: { title: string; sub: string; ch
               </Link>
             ))}
             {/* the live run is served by frontend/server.py (the real Python system) */}
-            <a href="http://localhost:8000/" className="nav-link">Live run</a>
+            <a
+              href="http://localhost:8000/"
+              className="nav-link"
+              onClick={(e) => { e.currentTarget.href = `http://localhost:8000/?theme=${localStorage.getItem("theme") ?? "light"}`; }}
+            >
+              Live run
+            </a>
           </nav>
           <ThemeToggle />
         </div>

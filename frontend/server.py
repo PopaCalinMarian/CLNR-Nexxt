@@ -18,6 +18,7 @@ import time
 from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -72,15 +73,16 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
-        if self.path in ("/", "/index.html"):
+        path = urlsplit(self.path).path  # ignore ?theme= and other query strings
+        if path in ("/", "/index.html"):
             self._send(200, (Path(__file__).parent / "index.html").read_bytes(), "text/html; charset=utf-8")
-        elif self.path == "/sample.csv":
+        elif path == "/sample.csv":
             self._send(200, SAMPLE.read_bytes(), "text/csv; charset=utf-8")
         else:
             self._send(404, "not found", "text/plain")
 
     def do_POST(self):
-        if self.path != "/run":
+        if urlsplit(self.path).path != "/run":
             return self._send(404, "not found", "text/plain")
         n = int(self.headers.get("Content-Length") or 0)
         if n <= 0 or n > MAX_BODY:

@@ -87,9 +87,9 @@ code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break
 <header class="top"><div>
   <span class="brand">hooly{lab}</span>
   <nav>
-    <a class="nav-link" href="http://localhost:5173/claims">New claims</a>
-    <a class="nav-link" href="http://localhost:5173/how-it-works">How it works</a>
-    <a class="nav-link" href="http://localhost:5173/classifier">Classifier</a>
+    <a class="nav-link" data-site href="http://localhost:5173/claims">New claims</a>
+    <a class="nav-link" data-site href="http://localhost:5173/how-it-works">How it works</a>
+    <a class="nav-link" data-site href="http://localhost:5173/classifier">Classifier</a>
     <a class="nav-link nav-active" href="/">Live run</a>
   </nav>
   <button class="nav-link" id="theme" aria-label="Toggle dark theme">Dark</button>
@@ -101,27 +101,25 @@ code { font: 11px var(--mono); color: var(--muted-foreground); word-break: break
 </div>
 <section>
   <h2>Architecture</h2>
-  <svg id="diagram" viewBox="0 0 1160 330" role="img" aria-label="Architecture: input rows flow through subject finder, fact router, value extractor, knowledge base, evidence features and a tree judge to labels; practice rows build a fact tree that feeds a claim builder, validator and selector to 1,000 claims; both write output.csv">
+  <svg id="diagram" viewBox="0 0 1200 320" role="img" aria-label="Architecture: input rows flow through subject finder, fact router, value extractor, evidence features (fed by a temporal knowledge base built from the practice rows) and a tree judge to labels; the practice rows also build a fact tree that feeds a claim builder, validator and selector to 1,000 claims; both write output.csv">
     <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z"/></marker></defs>
     <text class="lane" x="10" y="16">Job 1 · Classify the rows (src/label_rows.py)</text>
     <rect data-step="1" class="io" x="10" y="40" width="110" height="60" rx="8"/><text x="65" y="62" class="io-t">universe.csv</text><text x="65" y="80" class="sub io-t">id, text, date</text>
-    <rect data-step="3" class="box" x="150" y="40" width="120" height="60"/><text x="210" y="62">Subject finder</text><text x="210" y="80" class="sub">lexicon + page context</text>
-    <rect data-step="4" class="box" x="290" y="40" width="120" height="60"/><text x="350" y="62">Fact router</text><text x="350" y="80" class="sub">TF-IDF + linear SVM</text>
-    <rect data-step="5" class="box" x="430" y="40" width="120" height="60"/><text x="490" y="62">Value extractor</text><text x="490" y="80" class="sub">numbers, dates, names</text>
-    <rect data-step="6" class="box" x="570" y="40" width="140" height="60"/><text x="640" y="62">Evidence features</text><text x="640" y="80" class="sub">current / old / lie / votes</text>
-    <rect data-step="7" class="hot" x="730" y="40" width="130" height="60"/><text x="795" y="62">Tree judge</text><text x="795" y="80" class="sub">gradient boosting</text>
-    <rect data-step="8" class="box" x="880" y="40" width="120" height="60"/><text x="940" y="62">Label + conf.</text><text x="940" y="80" class="sub">unsure if p &lt; τ</text>
-    <rect data-step="2" class="io" x="430" y="140" width="250" height="44" rx="8"/><text x="555" y="162" class="io-t">Practice rows + lexicon → temporal KB</text>
-    <path d="M120,70H148"/><path d="M270,70H288"/><path d="M410,70H428"/><path d="M550,70H568"/><path d="M710,70H728"/><path d="M860,70H878"/>
-    <path d="M600,140V102"/><path d="M1000,70H1040V150"/>
-    <text class="lane" x="10" y="216">Job 2 · Generate 1,000 claims (generate_claims.py)</text>
-    <rect data-step="9" class="box" x="150" y="240" width="140" height="60"/><text x="220" y="262">Fact tree</text><text x="220" y="280" class="sub">value periods per slot</text>
-    <rect data-step="10" class="box" x="310" y="240" width="150" height="60"/><text x="385" y="262">Candidate builder</text><text x="385" y="280" class="sub">fact·compare·change·event·relation</text>
-    <rect data-step="11" class="box" x="480" y="240" width="140" height="60"/><text x="550" y="262">Referee validator</text><text x="550" y="280" class="sub">claim-forms, new, unique</text>
-    <rect data-step="12" class="hot" x="640" y="240" width="140" height="60"/><text x="710" y="262">Selector</text><text x="710" y="280" class="sub">round-robin, conf ≥ 0.7</text>
-    <rect data-step="13" class="box" x="800" y="240" width="120" height="60"/><text x="860" y="262">1,000 claims</text><text x="860" y="280" class="sub">label true + conf.</text>
-    <path d="M500,184L230,238"/><path d="M290,270H308"/><path d="M460,270H478"/><path d="M620,270H638"/><path d="M780,270H798"/><path d="M920,270H1040V202"/>
-    <rect data-step="14" class="io" x="990" y="152" width="160" height="48" rx="8"/><text x="1070" y="176" class="io-t">/output/output.csv</text>
+    <rect data-step="3" class="box" x="140" y="40" width="140" height="60"/><text x="210" y="62" class="">Subject finder</text><text x="210" y="80" class="sub">lexicon + page context</text>
+    <rect data-step="4" class="box" x="298" y="40" width="130" height="60"/><text x="363" y="62" class="">Fact router</text><text x="363" y="80" class="sub">TF-IDF + linear SVM</text>
+    <rect data-step="5" class="box" x="446" y="40" width="140" height="60"/><text x="516" y="62" class="">Value extractor</text><text x="516" y="80" class="sub">numbers, dates, names</text>
+    <rect data-step="6" class="box" x="604" y="40" width="150" height="60"/><text x="679" y="62" class="">Evidence features</text><text x="679" y="80" class="sub">current, old, lie, votes</text>
+    <rect data-step="7" class="hot" x="772" y="40" width="120" height="60"/><text x="832" y="62" class="">Tree judge</text><text x="832" y="80" class="sub">gradient boosting</text>
+    <rect data-step="8" class="box" x="910" y="40" width="120" height="60"/><text x="970" y="62" class="">Label + conf.</text><text x="970" y="80" class="sub">unsure if p &lt; τ</text>
+    <rect data-step="2" class="io" x="480" y="140" width="250" height="44" rx="8"/><text x="605" y="162" class="io-t">Practice rows + lexicon → temporal KB</text>
+    <text class="lane" x="36" y="222">Job 2 · Generate 1,000 claims (generate_claims.py)</text>
+    <rect data-step="9" class="box" x="140" y="240" width="150" height="60"/><text x="215" y="262" class="">Fact tree</text><text x="215" y="280" class="sub">value periods per slot</text>
+    <rect data-step="10" class="box" x="308" y="240" width="180" height="60"/><text x="398" y="262" class="">Candidate builder</text><text x="398" y="280" class="sub">5 claim types</text>
+    <rect data-step="11" class="box" x="506" y="240" width="150" height="60"/><text x="581" y="262" class="">Referee validator</text><text x="581" y="280" class="sub">claim-forms, new, unique</text>
+    <rect data-step="12" class="hot" x="674" y="240" width="140" height="60"/><text x="744" y="262" class="">Selector</text><text x="744" y="280" class="sub">round-robin, conf ≥ 0.7</text>
+    <rect data-step="13" class="box" x="832" y="240" width="130" height="60"/><text x="897" y="262" class="">1,000 claims</text><text x="897" y="280" class="sub">label true + conf.</text>
+    <rect data-step="14" class="io" x="1060" y="152" width="130" height="48" rx="8"/><text x="1125" y="176" class="io-t">/output/output.csv</text>
+    <path d="M120,70H138"/><path d="M280,70H296"/><path d="M428,70H444"/><path d="M586,70H602"/><path d="M754,70H770"/><path d="M892,70H908"/><path d="M679,140V102"/><path d="M1030,70H1125V150"/><path d="M480,162H24V270H138"/><path d="M290,270H306"/><path d="M488,270H504"/><path d="M656,270H672"/><path d="M814,270H830"/><path d="M962,270H1125V202"/>
   </svg>
 </section>
 <section>
@@ -223,7 +221,14 @@ function setTheme(d) {
   $('theme').textContent = d ? 'Light' : 'Dark';
   try { localStorage.setItem('theme', d ? 'dark' : 'light'); } catch {}
 }
-try { setTheme(localStorage.getItem('theme') === 'dark'); } catch {}
+// the website runs on another port (its own storage), so the theme also travels as ?theme= on the links between them
+const asked = new URLSearchParams(location.search).get('theme');
+let saved = null; try { saved = localStorage.getItem('theme'); } catch {}
+setTheme((asked || saved) === 'dark');
+if (asked) history.replaceState(null, '', location.pathname); // so a reload keeps later toggles
+document.querySelectorAll('a[data-site]').forEach(a => a.onclick = () => {
+  const u = new URL(a.href); u.searchParams.set('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); a.href = u;
+});
 $('theme').onclick = () => setTheme(!document.documentElement.classList.contains('dark'));
 
 loadSample();
